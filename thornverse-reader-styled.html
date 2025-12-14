@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4c1d95">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Thornverse">
+    <title>Thornverse Reader</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: #0a0a0a;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden;
+        }
+        
+        html { height: -webkit-fill-available; }
+        
+        body.blurred .book-container {
+            filter: blur(20px);
+            transition: filter 0.1s;
+        }
+        
+        /* ============ TOP BAR ============ */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(180deg, rgba(20,10,30,0.98), rgba(20,10,30,0.9));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(128,0,255,0.3);
+        }
+        
+        .book-title-bar {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 40%;
+        }
+        
+        .book-title-bar .t-thorn { color: #a78bfa; }
+        .book-title-bar .t-verse { color: #dc2626; }
+        
+        .top-bar-buttons { display: flex; gap: 8px; }
+        
+        .top-btn {
+            background: rgba(128,0,255,0.2);
+            border: 1px solid rgba(128,0,255,0.4);
+            color: #d4b8ff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .top-btn:hover, .top-btn:active {
+            background: rgba(128,0,255,0.4);
+            color: #fff;
+        }
+        
+        /* ============ PANELS ============ */
+        .panel {
+            position: fixed;
+            top: 50px;
+            width: 280px;
+            height: calc(100vh - 50px);
+            background: rgba(12,8,20,0.98);
+            z-index: 999;
+            transition: transform 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .panel-left {
+            left: 0;
+            transform: translateX(-100%);
+            border-right: 2px solid rgba(128,0,255,0.4);
+        }
+        
+        .panel-right {
+            right: 0;
+            transform: translateX(100%);
+            border-left: 2px solid rgba(128,0,255,0.4);
+        }
+        
+        .panel.open { transform: translateX(0); }
+        
+        .panel-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: #a78bfa;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(128,0,255,0.3);
+            padding-bottom: 8px;
+        }
+        
+        .chapter-list { list-style: none; }
+        
+        .chapter-item {
+            padding: 12px 15px;
+            color: #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .chapter-item:hover, .chapter-item:active {
+            background: rgba(128,0,255,0.2);
+            color: #fff;
+        }
+        
+        .chapter-item.current {
+            background: rgba(128,0,255,0.3);
+            color: #a78bfa;
+            border-left: 3px solid #a78bfa;
+        }
+        
+        .bookmarks-section {
+            margin-top: 25px;
+            border-top: 1px solid rgba(128,0,255,0.3);
+            padding-top: 15px;
+        }
+        
+        .bookmark-item {
+            padding: 10px;
+            background: rgba(128,0,255,0.1);
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .bookmark-item:hover { background: rgba(128,0,255,0.25); }
+        .bookmark-item .bm-page { color: #a78bfa; font-size: 0.8rem; }
+        .bookmark-item .bm-preview { color: #888; font-size: 0.75rem; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bookmark-item .bm-delete { position: absolute; top: 8px; right: 10px; color: #666; cursor: pointer; }
+        .bookmark-item .bm-delete:hover { color: #ff6666; }
+        
+        /* Settings */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .setting-label { color: #ccc; font-size: 0.85rem; }
+        .setting-control { display: flex; gap: 8px; }
+        
+        .size-btn {
+            width: 40px;
+            height: 34px;
+            background: rgba(128,0,255,0.2);
+            border: 1px solid rgba(128,0,255,0.4);
+            color: #d4b8ff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .size-btn:hover, .size-btn.active {
+            background: rgba(128,0,255,0.5);
+            color: #fff;
+        }
+        
+        .toggle-switch {
+            width: 50px;
+            height: 26px;
+            background: #333;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.on { background: #6d28d9; }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+        
+        .toggle-switch.on::after { left: 26px; }
+        
+        .settings-section { margin-bottom: 20px; }
+        
+        .protection-note {
+            color: #777;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+        
+        /* ============ PROGRESS BAR - SPLIT COLORS ============ */
+        .progress-bar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(50,50,50,0.8);
+            z-index: 1000;
+            display: flex;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            background: linear-gradient(90deg, #6d28d9 0%, #6d28d9 50%, #dc2626 50%, #dc2626 100%);
+        }
+        
+        /* ============ PURPLE FRAME WITH RED ACCENT ============ */
+        .purple-frame {
+            padding: 10px;
+            background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 15%, #4c1d95 35%, #6d28d9 50%, #4c1d95 65%, #8b0000 85%, #dc2626 100%);
+            border-radius: 12px;
+            box-shadow: 
+                0 0 40px rgba(139, 0, 255, 0.4),
+                0 0 40px rgba(220, 38, 38, 0.2),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            margin-top: 30px;
+        }
+        
+        .frame-thorns {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .frame-thorns svg { fill: none; stroke: #1a0a2a; stroke-width: 3; }
+        
+        .frame-thorns-top { top: 2px; left: 50%; transform: translateX(-50%); width: 180px; height: 22px; }
+        .frame-thorns-bottom { bottom: 2px; left: 50%; transform: translateX(-50%) scaleY(-1); width: 180px; height: 22px; }
+        
+        .frame-corner { position: absolute; width: 40px; height: 40px; z-index: 11; }
+        .frame-corner svg { fill: #2d1b4e; }
+        .corner-tl { top: 0; left: 0; }
+        .corner-tr { top: 0; right: 0; transform: scaleX(-1); }
+        .corner-tr svg { fill: #4a1a1a; }
+        .corner-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+        .corner-br { bottom: 0; right: 0; transform: scale(-1); }
+        .corner-br svg { fill: #4a1a1a; }
+        
+        /* ============ BOOK ============ */
+        .book-container {
+            perspective: 2000px;
+            width: 90vw;
+            max-width: 820px;
+            height: 72vh;
+            max-height: 600px;
+            position: relative;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+        
+        .book {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            display: flex;
+        }
+        
+        .book-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 100%;
+            background: linear-gradient(90deg, #0d0d0d, #1a1a1a, #0d0d0d);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+        
+        .page {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 0;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+        
+        /* LEFT PAGE - PURPLE EDGE GLOW */
+        .page-left {
+            left: 0;
+            border-radius: 6px 0 0 6px;
+            transform-origin: right center;
+            background: linear-gradient(90deg, rgba(109,40,217,0.08) 0%, #1c1c1c 15%, #1c1c1c 100%);
+            box-shadow: inset -15px 0 25px -15px rgba(0,0,0,0.5);
+        }
+        
+        /* RIGHT PAGE - RED EDGE GLOW */
+        .page-right {
+            right: 0;
+            border-radius: 0 6px 6px 0;
+            transform-origin: left center;
+            background: linear-gradient(270deg, rgba(220,38,38,0.08) 0%, #1c1c1c 15%, #1c1c1c 100%);
+            box-shadow: inset 15px 0 25px -15px rgba(0,0,0,0.5);
+        }
+        
+        .page-content {
+            padding: 25px 28px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-left .page-content { padding-right: 20px; }
+        .page-right .page-content { padding-left: 20px; }
+        
+        /* ============ WATERMARK ============ */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: rgba(128, 0, 255, 0.05);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 50;
+            letter-spacing: 2px;
+        }
+        
+        /* ============ TYPOGRAPHY ============ */
+        .chapter-title {
+            font-family: 'Cinzel', serif;
+            color: #a78bfa;
+            text-align: center;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .book-text {
+            font-family: 'Cormorant Garamond', serif;
+            line-height: 1.75;
+            color: #e5e5e5;
+            text-align: justify;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .book-text p {
+            margin-bottom: 1em;
+            text-indent: 1.5em;
+        }
+        
+        .book-text p:first-child { text-indent: 0; }
+        
+        .book-text p:first-child::first-letter {
+            float: left;
+            line-height: 1;
+            padding-right: 8px;
+            font-family: 'Cinzel', serif;
+        }
+        
+        /* LEFT PAGE DROP CAP = PURPLE */
+        .page-left .book-text p:first-child::first-letter {
+            color: #a78bfa;
+        }
+        
+        /* RIGHT PAGE DROP CAP = RED */
+        .page-right .book-text p:first-child::first-letter {
+            color: #dc2626;
+        }
+        
+        /* PAGE NUMBERS - PURPLE LEFT, RED RIGHT */
+        .page-number {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            margin-top: auto;
+            padding-top: 8px;
+        }
+        
+        .page-left .page-number { color: #a78bfa; }
+        .page-right .page-number { color: #dc2626; }
+        
+        /* TWO FONT SIZES */
+        .font-normal .book-text { font-size: 0.92rem; line-height: 1.7; }
+        .font-normal .chapter-title { font-size: 0.95rem; }
+        .font-normal .book-text p:first-child::first-letter { font-size: 2.2rem; }
+        
+        .font-large .book-text { font-size: 1.02rem; line-height: 1.75; }
+        .font-large .chapter-title { font-size: 1.05rem; }
+        .font-large .book-text p:first-child::first-letter { font-size: 2.5rem; }
+        
+        /* Page flip */
+        .page-turning { z-index: 200; }
+        .page-right.flipping { transform: rotateY(-180deg); }
+        .page-left.flipping { transform: rotateY(180deg); }
+        
+        /* ============ NAVIGATION ============ */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            color: #e5e5e5;
+            padding: 16px 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.3s;
+            z-index: 500;
+        }
+        
+        /* LEFT NAV = PURPLE */
+        .nav-prev {
+            left: 5px;
+            border-radius: 0 6px 6px 0;
+            background: linear-gradient(135deg, #4c1d95, #6d28d9);
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4);
+        }
+        
+        .nav-prev:hover, .nav-prev:active {
+            background: linear-gradient(135deg, #6d28d9, #7c3aed);
+            box-shadow: 0 0 25px rgba(139, 0, 255, 0.6);
+        }
+        
+        /* RIGHT NAV = RED */
+        .nav-next {
+            right: 5px;
+            border-radius: 6px 0 0 6px;
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+        }
+        
+        .nav-next:hover, .nav-next:active {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.6);
+        }
+        
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        /* ============ PAGE INFO ============ */
+        .page-info {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            color: #777;
+            background: rgba(20, 20, 20, 0.95);
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            z-index: 600;
+        }
+        
+        /* ============ TOAST ============ */
+        .toast {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #6d28d9;
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* ============ INSTALL PROMPT ============ */
+        .install-btn {
+            display: none;
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4c1d95, #6d28d9);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .install-btn:hover { background: linear-gradient(135deg, #6d28d9, #7c3aed); }
+        .install-btn.visible { display: block; }
+        
+        .reading-time {
+            color: #666;
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        /* ============ MOBILE ============ */
+        @media (max-width: 768px) {
+            .top-bar { padding: 0 8px; height: 45px; }
+            .book-title-bar { display: none; }
+            .top-btn { padding: 6px 10px; font-size: 0.65rem; }
+            .purple-frame { padding: 8px; margin-top: 22px; }
+            .book-container { height: 70vh; }
+            .page-content { padding: 18px 18px; }
+            .page-left .page-content { padding-right: 14px; }
+            .page-right .page-content { padding-left: 14px; }
+            .book-spine { width: 8px; }
+            .nav-btn { padding: 12px 10px; font-size: 1.1rem; }
+            .panel { width: 260px; }
+            .watermark { font-size: 0.65rem; }
+        }
+        
+        @media (max-width: 500px) {
+            .page-left { display: none; }
+            .page-right { 
+                width: 100%; 
+                border-radius: 6px;
+                /* Single page gets gradient from both sides */
+                background: linear-gradient(90deg, rgba(109,40,217,0.06) 0%, #1c1c1c 10%, #1c1c1c 90%, rgba(220,38,38,0.06) 100%);
+            }
+            .book-spine { display: none; }
+            .page-right .page-content { padding: 20px 16px; }
+        }
+        
+        @supports (padding: max(0px)) {
+            .top-bar { padding-top: max(0px, env(safe-area-inset-top)); }
+            .progress-bar-container { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <button class="top-btn" onclick="togglePanel('left')">☰ Chapters</button>
+        <span class="book-title-bar"><span class="t-thorn">THORN</span><span class="t-verse">VERSE</span></span>
+        <div class="top-bar-buttons">
+            <button class="top-btn" onclick="addBookmark()">🔖 Save</button>
+            <button class="top-btn" onclick="togglePanel('right')">⚙</button>
+        </div>
+    </div>
+    
+    <!-- CHAPTERS PANEL -->
+    <div class="panel panel-left" id="panelLeft">
+        <h3 class="panel-title">Chapters</h3>
+        <ul class="chapter-list" id="chapterList"></ul>
+        <div class="reading-time" id="readingTime"></div>
+        
+        <div class="bookmarks-section">
+            <h3 class="panel-title">🔖 Your Bookmarks</h3>
+            <div id="bookmarksList"></div>
+        </div>
+    </div>
+    
+    <!-- SETTINGS PANEL -->
+    <div class="panel panel-right" id="panelRight">
+        <div class="settings-section">
+            <h3 class="panel-title">Display</h3>
+            <div class="setting-row">
+                <span class="setting-label">Text Size</span>
+                <div class="setting-control">
+                    <button class="size-btn" id="sizeNormal" onclick="changeFontSize('normal')">Aa</button>
+                    <button class="size-btn" id="sizeLarge" onclick="changeFontSize('large')">Aa+</button>
+                </div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Page Sound</span>
+                <div class="toggle-switch" id="soundToggle" onclick="toggleSound()"></div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Progress Bar</span>
+                <div class="toggle-switch on" id="progressToggle" onclick="toggleProgressBar()"></div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="panel-title">App</h3>
+            <button class="install-btn" id="installBtn" onclick="installApp()">📲 Install App</button>
+            <p class="protection-note">Content protected with unique reader ID. Screenshots are watermarked for piracy tracking.</p>
+        </div>
+    </div>
+    
+    <!-- NAVIGATION -->
+    <button class="nav-btn nav-prev" onclick="prevPage()">❮</button>
+    <button class="nav-btn nav-next" onclick="nextPage()">❯</button>
+    
+    <!-- BOOK -->
+    <div class="purple-frame">
+        <div class="frame-thorns frame-thorns-top">
+            <svg viewBox="0 0 180 22" preserveAspectRatio="none" style="width:100%;height:100%;">
+                <path d="M0,20 Q18,16 28,20 L32,10 L36,20 Q55,16 70,20 L74,8 L78,20 Q95,14 110,20 L114,10 L118,20 Q140,16 155,20 L159,8 L163,20 Q175,16 180,20" />
+            </svg>
+        </div>
+        <div class="frame-thorns frame-thorns-bottom">
+            <svg viewBox="0 0 180 22" preserveAspectRatio="none" style="width:100%;height:100%;">
+                <path d="M0,20 Q18,16 28,20 L32,10 L36,20 Q55,16 70,20 L74,8 L78,20 Q95,14 110,20 L114,10 L118,20 Q140,16 155,20 L159,8 L163,20 Q175,16 180,20" />
+            </svg>
+        </div>
+        
+        <div class="frame-corner corner-tl"><svg viewBox="0 0 40 40"><path d="M0,0 L40,0 L40,8 Q25,8 20,20 L12,16 L16,24 Q8,28 8,40 L0,40 Z"/></svg></div>
+        <div class="frame-corner corner-tr"><svg viewBox="0 0 40 40"><path d="M0,0 L40,0 L40,8 Q25,8 20,20 L12,16 L16,24 Q8,28 8,40 L0,40 Z"/></svg></div>
+        <div class="frame-corner corner-bl"><svg viewBox="0 0 40 40"><path d="M0,0 L40,0 L40,8 Q25,8 20,20 L12,16 L16,24 Q8,28 8,40 L0,40 Z"/></svg></div>
+        <div class="frame-corner corner-br"><svg viewBox="0 0 40 40"><path d="M0,0 L40,0 L40,8 Q25,8 20,20 L12,16 L16,24 Q8,28 8,40 L0,40 Z"/></svg></div>
+        
+        <div class="book-container font-normal" id="bookContainer">
+            <div class="book" id="book">
+                <div class="book-spine"></div>
+                
+                <div class="page page-left" id="pageLeft">
+                    <div class="watermark">LICENSED TO: READER-7X9K2</div>
+                    <div class="page-content">
+                        <h2 class="chapter-title" id="leftTitle"></h2>
+                        <div class="book-text" id="leftText"></div>
+                        <div class="page-number" id="leftNum"></div>
+                    </div>
+                </div>
+                
+                <div class="page page-right" id="pageRight">
+                    <div class="watermark">LICENSED TO: READER-7X9K2</div>
+                    <div class="page-content">
+                        <div class="book-text" id="rightText"></div>
+                        <div class="page-number" id="rightNum"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress-bar-container" id="progressBarContainer">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <div class="page-info" id="pageInfo"></div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============ CONTENT ============
+        const chapters = [
+            { title: "Title Page", startPage: 0 },
+            { title: "Chapter One", startPage: 1 },
+            { title: "Chapter Two", startPage: 4 },
+        ];
+        
+        const pages = [
+            {
+                chapter: 0,
+                leftTitle: "",
+                leftText: "<p style='text-align:center; font-size:1.5rem; font-family:Cinzel,serif; margin-top:18%; color:#a78bfa;'>THE RUIN IN HER EYES</p><p style='text-align:center; margin-top:12px; color:#888; font-size:0.95rem;'>A Thornverse Novel</p><p style='text-align:center; margin-top:25px; font-style:italic; color:#666;'>Yaznil Cross</p>",
+                rightText: "<p style='text-align:center; font-style:italic; margin-top:18%; font-size:1rem; color:#ccc;'>\"Not all monsters hide under the bed.<br><span style='color:#a78bfa;'>Some climb in with you.</span>\"</p>",
+                leftNum: "",
+                rightNum: "1"
+            },
+            {
+                chapter: 1,
+                leftTitle: "Chapter One",
+                leftText: "<p>She had been warned about men like him. The kind whose smile didn't reach their eyes. The kind who made promises with their hands before their mouths ever opened.</p><p>But warnings were just words, and words had never stopped her before.</p><p>The club was dark, the bass heavy enough to feel in her chest. She'd come here to forget. To drown herself in music and sweat and the press of strangers who didn't know her name.</p>",
+                rightText: "<p>He found her at the bar. Of course he did. Men like him had a sixth sense for women like her—the ones running from something, the ones with just enough recklessness in their eyes to be dangerous.</p><p>\"You look like you're waiting for someone,\" he said, sliding onto the stool beside her.</p><p>\"Maybe I am.\"</p><p>\"Maybe you just found them.\"</p>",
+                leftNum: "2",
+                rightNum: "3"
+            },
+            {
+                chapter: 1,
+                leftTitle: "",
+                leftText: "<p>His voice was low. Confident. The kind of voice that was used to getting what it wanted.</p><p>She turned to look at him fully for the first time. Tall. Dark suit that cost more than her rent. Hands that looked like they knew exactly what to do.</p><p>\"That's a bold assumption,\" she said.</p>",
+                rightText: "<p>\"I'm a bold man.\"</p><p>He ordered her another drink without asking what she wanted. Normally that would've pissed her off. But the way he looked at her when he did it—like he already knew every secret she'd ever kept—made her forget to be angry.</p><p>\"What's your name?\" she asked.</p><p>\"Does it matter?\"</p>",
+                leftNum: "4",
+                rightNum: "5"
+            },
+            {
+                chapter: 1,
+                leftTitle: "",
+                leftText: "<p>It didn't. Not really. Not for what they both knew was coming.</p><p>She took the drink. Let her fingers brush his when she did. Watched his jaw tighten almost imperceptibly.</p><p>Good. He wasn't as controlled as he pretended to be.</p>",
+                rightText: "<p>\"You're playing a dangerous game,\" he said, leaning closer. Close enough that she could smell him—something dark and expensive and absolutely intentional.</p><p>\"Maybe I like danger.\"</p><p>\"Then you came to the right place.\"</p><p>He stood, extending his hand. Not a question. A command dressed up as an invitation.</p>",
+                leftNum: "6",
+                rightNum: "7"
+            },
+            {
+                chapter: 2,
+                leftTitle: "Chapter Two",
+                leftText: "<p>The hotel room was everything she expected. Dark. Expensive. Anonymous.</p><p>He didn't turn on the lights. Didn't need to. The city glow through the floor-to-ceiling windows painted everything in shades of amber and shadow.</p><p>\"Last chance to leave,\" he said, though his hands were already at her waist.</p>",
+                rightText: "<p>\"If I wanted to leave, I wouldn't be here.\"</p><p>His grip tightened. Just enough to make her breath catch.</p><p>\"Good answer.\"</p><p>When he kissed her, it wasn't gentle. It wasn't asking. It was taking—and she let him take.</p>",
+                leftNum: "8",
+                rightNum: "9"
+            },
+            {
+                chapter: 2,
+                leftTitle: "",
+                leftText: "<p>His mouth moved from her lips to her neck, teeth grazing the sensitive skin there. She arched into him, fingers digging into his shoulders through that expensive suit.</p><p>\"You're overdressed,\" she managed.</p><p>\"So are you.\"</p>",
+                rightText: "<p>He made quick work of her zipper. The dress pooled at her feet like water, leaving her in nothing but black lace and the heels she'd worn to catch his attention.</p><p>His eyes raked over her. Hungry. Appreciative. Dangerous.</p><p>\"Beautiful,\" he murmured. \"And all mine. At least for tonight.\"</p>",
+                leftNum: "10",
+                rightNum: "11"
+            }
+        ];
+        
+        // ============ STATE ============
+        let currentSpread = 0;
+        let bookmarks = JSON.parse(localStorage.getItem('thornverse-bookmarks') || '[]');
+        let settings = JSON.parse(localStorage.getItem('thornverse-settings') || '{"fontSize":"normal","sound":false,"progress":true}');
+        let deferredPrompt = null;
+        
+        // PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').classList.add('visible');
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((result) => {
+                    if (result.outcome === 'accepted') showToast('App installed!');
+                    deferredPrompt = null;
+                    document.getElementById('installBtn').classList.remove('visible');
+                });
+            }
+        }
+        
+        // INIT
+        function init() {
+            const lastPage = localStorage.getItem('thornverse-lastpage');
+            if (lastPage) currentSpread = parseInt(lastPage);
+            applySettings();
+            buildChapterList();
+            updatePages();
+            updateBookmarks();
+            updateReadingTime();
+            setupProtection();
+        }
+        
+        function applySettings() {
+            document.getElementById('bookContainer').className = 'book-container font-' + settings.fontSize;
+            document.getElementById('soundToggle').classList.toggle('on', settings.sound);
+            document.getElementById('progressToggle').classList.toggle('on', settings.progress);
+            document.getElementById('progressBarContainer').style.display = settings.progress ? 'block' : 'none';
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(settings.fontSize === 'normal' ? 'sizeNormal' : 'sizeLarge').classList.add('active');
+        }
+        
+        function saveSettings() { localStorage.setItem('thornverse-settings', JSON.stringify(settings)); }
+        
+        function updateReadingTime() {
+            const totalWords = pages.reduce((acc, p) => acc + (p.leftText + p.rightText).replace(/<[^>]+>/g, '').split(/\s+/).length, 0);
+            document.getElementById('readingTime').textContent = `~${Math.ceil(totalWords / 200)} min read`;
+        }
+        
+        function buildChapterList() {
+            const list = document.getElementById('chapterList');
+            list.innerHTML = '';
+            chapters.forEach((ch, i) => {
+                const li = document.createElement('li');
+                li.className = 'chapter-item' + (pages[currentSpread].chapter === i ? ' current' : '');
+                li.textContent = ch.title;
+                li.onclick = () => { currentSpread = ch.startPage; updatePages(); togglePanel('left'); };
+                list.appendChild(li);
+            });
+        }
+        
+        function updatePages() {
+            const spread = pages[currentSpread];
+            document.getElementById('leftTitle').innerHTML = spread.leftTitle;
+            document.getElementById('leftText').innerHTML = spread.leftText;
+            document.getElementById('rightText').innerHTML = spread.rightText;
+            document.getElementById('leftNum').textContent = spread.leftNum;
+            document.getElementById('rightNum').textContent = spread.rightNum;
+            document.getElementById('pageInfo').textContent = currentSpread === 0 ? 'Title Page' : `Pages ${currentSpread * 2}-${currentSpread * 2 + 1} of ${pages.length * 2}`;
+            document.getElementById('progressBar').style.width = ((currentSpread + 1) / pages.length) * 100 + '%';
+            document.querySelector('.nav-prev').disabled = currentSpread === 0;
+            document.querySelector('.nav-next').disabled = currentSpread === pages.length - 1;
+            buildChapterList();
+            localStorage.setItem('thornverse-lastpage', currentSpread);
+        }
+        
+        function nextPage() {
+            if (currentSpread >= pages.length - 1) return;
+            if (settings.sound) playSound();
+            document.getElementById('pageRight').classList.add('page-turning', 'flipping');
+            setTimeout(() => { currentSpread++; updatePages(); document.getElementById('pageRight').classList.remove('page-turning', 'flipping'); }, 600);
+        }
+        
+        function prevPage() {
+            if (currentSpread <= 0) return;
+            if (settings.sound) playSound();
+            document.getElementById('pageLeft').classList.add('page-turning', 'flipping');
+            setTimeout(() => { currentSpread--; updatePages(); document.getElementById('pageLeft').classList.remove('page-turning', 'flipping'); }, 600);
+        }
+        
+        function playSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.frequency.value = 150;
+                g.gain.setValueAtTime(0.08, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        }
+        
+        function addBookmark() {
+            const spread = pages[currentSpread];
+            const preview = spread.leftText.replace(/<[^>]+>/g, '').substring(0, 35) + '...';
+            if (!bookmarks.find(b => b.page === currentSpread)) {
+                bookmarks.push({ page: currentSpread, pageNum: spread.leftNum || '1', preview });
+                localStorage.setItem('thornverse-bookmarks', JSON.stringify(bookmarks));
+                updateBookmarks();
+                showToast('Bookmark saved!');
+            } else { showToast('Already bookmarked'); }
+        }
+        
+        function updateBookmarks() {
+            const list = document.getElementById('bookmarksList');
+            if (bookmarks.length === 0) { list.innerHTML = '<p style="color:#555; font-size:0.8rem;">No bookmarks yet</p>'; return; }
+            list.innerHTML = '';
+            bookmarks.forEach((bm, i) => {
+                const div = document.createElement('div');
+                div.className = 'bookmark-item';
+                div.innerHTML = `<span class="bm-delete" onclick="event.stopPropagation(); deleteBookmark(${i})">✕</span><div class="bm-page">Page ${bm.pageNum}</div><div class="bm-preview">${bm.preview}</div>`;
+                div.onclick = () => { currentSpread = bm.page; updatePages(); togglePanel('left'); };
+                list.appendChild(div);
+            });
+        }
+        
+        function deleteBookmark(i) {
+            bookmarks.splice(i, 1);
+            localStorage.setItem('thornverse-bookmarks', JSON.stringify(bookmarks));
+            updateBookmarks();
+            showToast('Bookmark removed');
+        }
+        
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+        
+        function togglePanel(side) {
+            const left = document.getElementById('panelLeft');
+            const right = document.getElementById('panelRight');
+            if (side === 'left') { left.classList.toggle('open'); right.classList.remove('open'); }
+            else { right.classList.toggle('open'); left.classList.remove('open'); }
+        }
+        
+        function changeFontSize(size) { settings.fontSize = size; applySettings(); saveSettings(); }
+        function toggleSound() { settings.sound = !settings.sound; applySettings(); saveSettings(); }
+        function toggleProgressBar() { settings.progress = !settings.progress; applySettings(); saveSettings(); }
+        
+        function setupProtection() {
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('visibilitychange', () => document.body.classList.toggle('blurred', document.hidden));
+            document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { document.body.classList.add('blurred'); setTimeout(() => document.body.classList.remove('blurred'), 500); }});
+        }
+        
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => { const diff = touchStartX - e.changedTouches[0].screenX; if (Math.abs(diff) > 50) diff > 0 ? nextPage() : prevPage(); });
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') nextPage(); if (e.key === 'ArrowLeft') prevPage(); });
+        
+        init();
+    </script>
+</body>
+</html>
