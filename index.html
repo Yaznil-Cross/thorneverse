@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="Dark erotica by Yaznil.Cross. Enter the Thorneverse. The new era of dark erotica.">
+    <meta property="og:title" content="Yaznil.Cross | Thorneverse">
+    <meta property="og:description" content="Some monsters don't hide under the bed. They climb into it.">
+    <title>Yaznil.Cross | Thorneverse</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: #0a0a0a;
+            min-height: 100vh;
+            font-family: 'Cormorant Garamond', serif;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        /* AMBIENT BACKGROUND */
+        .ambient {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(128,0,255,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(139,0,0,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(167, 139, 250, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* 18+ BADGE */
+        .age-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border: 2px solid #dc2626;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #dc2626;
+            z-index: 100;
+            background: rgba(10,10,10,0.8);
+        }
+        
+        /* HERO SECTION */
+        .hero {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        /* AUTHOR NAME */
+        .author-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            letter-spacing: 8px;
+            color: #555;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+        
+        /* THORNEVERSE LOGO */
+        .logo {
+            margin-bottom: 30px;
+        }
+        
+        .logo-text {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 700;
+            letter-spacing: 8px;
+            line-height: 1;
+        }
+        
+        .logo-thorn {
+            color: #a78bfa;
+            text-shadow: 0 0 40px rgba(167, 139, 250, 0.5);
+        }
+        
+        .logo-verse {
+            color: #dc2626;
+            text-shadow: 0 0 40px rgba(220, 38, 38, 0.5);
+        }
+        
+        .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-style: italic;
+            color: #555;
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+        
+        /* MANIFESTO STATEMENT */
+        .manifesto {
+            margin-top: 40px;
+            max-width: 600px;
+            padding: 25px 30px;
+            border-top: 1px solid rgba(167, 139, 250, 0.2);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        
+        .manifesto-line {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            line-height: 2;
+        }
+        
+        .manifesto-line.main {
+            color: #a78bfa;
+            font-size: clamp(0.85rem, 2.2vw, 1rem);
+            margin-bottom: 8px;
+        }
+        
+        .manifesto-line.sub {
+            color: #444;
+            font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+        }
+        
+        .manifesto-accent {
+            color: #dc2626;
+        }
+        
+        /* SCROLL INDICATOR */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            animation: bounce 2s infinite;
+        }
+        
+        .scroll-indicator span {
+            font-family: 'Cinzel', serif;
+        }
+        
+        .scroll-arrow {
+            font-size: 1.2rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+        
+        /* SERIES SECTION */
+        .series-section {
+            position: relative;
+            z-index: 10;
+            padding: 80px 20px 100px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.7rem, 2vw, 0.85rem);
+            letter-spacing: 6px;
+            color: #444;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        
+        .section-divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.5), transparent);
+            margin: 0 auto;
+        }
+        
+        /* SERIES GRID */
+        .series-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        /* SERIES CARD */
+        .series-card {
+            display: block;
+            padding: 30px 40px;
+            background: rgba(15, 10, 25, 0.6);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .series-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #a78bfa, #dc2626);
+            transform: scaleY(0);
+            transition: transform 0.4s ease;
+        }
+        
+        .series-card:hover {
+            border-color: rgba(167, 139, 250, 0.4);
+            background: rgba(20, 15, 35, 0.8);
+            transform: translateX(5px);
+        }
+        
+        .series-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .series-card-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .series-info {
+            flex: 1;
+        }
+        
+        .series-name {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.3rem, 4vw, 1.7rem);
+            letter-spacing: 3px;
+            color: #e5e5e5;
+            margin-bottom: 8px;
+            transition: color 0.3s;
+        }
+        
+        .series-card:hover .series-name {
+            color: #a78bfa;
+        }
+        
+        .series-meta {
+            font-size: 0.85rem;
+            color: #555;
+            font-style: italic;
+        }
+        
+        .series-arrow {
+            font-size: 1.5rem;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .series-card:hover .series-arrow {
+            color: #a78bfa;
+            transform: translateX(5px);
+        }
+        
+        /* DARK WARNING VARIANT */
+        .series-card.dark-warning {
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+        
+        .series-card.dark-warning:hover {
+            border-color: rgba(220, 38, 38, 0.4);
+        }
+        
+        .series-card.dark-warning:hover .series-name {
+            color: #dc2626;
+        }
+        
+        .series-card.dark-warning:hover .series-arrow {
+            color: #dc2626;
+        }
+        
+        .series-card.dark-warning::before {
+            background: linear-gradient(180deg, #dc2626, #7f1d1d);
+        }
+        
+        /* DARK CONTENT TAG */
+        .dark-tag {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            padding: 3px 10px;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            color: #dc2626;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+        
+        /* FOOTER */
+        .footer {
+            position: relative;
+            z-index: 10;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(167, 139, 250, 0.1);
+        }
+        
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .footer-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+        
+        .footer-brand .thorn { color: #a78bfa; }
+        .footer-brand .verse { color: #dc2626; }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-link {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: #444;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-link:hover {
+            color: #a78bfa;
+        }
+        
+        .footer-copyright {
+            font-size: 0.65rem;
+            color: #333;
+            letter-spacing: 2px;
+        }
+        
+        /* MOBILE */
+        @media (max-width: 600px) {
+            .author-name { letter-spacing: 4px; }
+            .logo-text { letter-spacing: 4px; }
+            .manifesto { padding: 20px 15px; }
+            .manifesto-line { letter-spacing: 2px; }
+            .series-card { padding: 25px 20px; }
+            .series-card-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .series-arrow { align-self: flex-end; }
+            .dark-tag {
+                margin-left: 0;
+                margin-top: 8px;
+                display: block;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- 18+ Badge -->
+    <div class="age-badge">18+</div>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="author-name">Yaznil.Cross</div>
+        
+        <div class="logo">
+            <div class="logo-text">
+                <span class="logo-thorn">THORN</span><span class="logo-verse">VERSE</span>
+            </div>
+            <div class="tagline">Some monsters don't hide under the bed. They climb into it.</div>
+        </div>
+        
+        <!-- Manifesto -->
+        <div class="manifesto">
+            <div class="manifesto-line main">The New Era of <span class="manifesto-accent">Dark Erotica</span></div>
+            <div class="manifesto-line sub">Not for the faint of heart. Not for the weak of mind.</div>
+            <div class="manifesto-line sub">This is where your darkest curiosities come to <span class="manifesto-accent">play</span>.</div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <span>Explore</span>
+            <div class="scroll-arrow">↓</div>
+        </div>
+    </section>
+    
+    <!-- Series Section -->
+    <section class="series-section">
+        <div class="section-header">
+            <div class="section-title">Enter the Universe</div>
+            <div class="section-divider"></div>
+        </div>
+        
+        <div class="series-grid">
+            <!-- The Ruin Series -->
+            <a href="ruin-series.html" class="series-card">
+                <div class="series-card-inner">
+                    <div class="series-info">
+                        <div class="series-name">The Ruin Series</div>
+                        <div class="series-meta">A 7-Book Dark Erotica Saga</div>
+                    </div>
+                    <div class="series-arrow">→</div>
+                </div>
+            </a>
+            
+            <!-- Thorn Heights Apartments -->
+            <a href="thorn-heights.html" class="series-card">
+                <div class="series-card-inner">
+                    <div class="series-info">
+                        <div class="series-name">Thorn Heights Apartments</div>
+                        <div class="series-meta">A Victor Thorn Novel</div>
+                    </div>
+                    <div class="series-arrow">→</div>
+                </div>
+            </a>
+            
+            <!-- Count Backwards From Ten -->
+            <a href="count-backwards.html" class="series-card dark-warning">
+                <div class="series-card-inner">
+                    <div class="series-info">
+                        <div class="series-name">
+                            Count Backwards From Ten
+                            <span class="dark-tag">EXTREME</span>
+                        </div>
+                        <div class="series-meta">Standalone Novel — Dubcon/Noncon</div>
+                    </div>
+                    <div class="series-arrow">→</div>
+                </div>
+            </a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="thorn">THORN</span><span class="verse">VERSE</span>
+            </div>
+            <div class="footer-links">
+                <a href="mailto:contact@yaznil-cross.com" class="footer-link">Contact</a>
+            </div>
+            <div class="footer-copyright">© 2025 YAZNIL.CROSS — ALL RIGHTS RESERVED</div>
+        </div>
+    </footer>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+</body>
+</html>
